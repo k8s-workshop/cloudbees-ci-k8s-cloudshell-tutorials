@@ -58,7 +58,7 @@ Note the `annotation` for workload identity is included on the `jenkins` `servic
 Next, navigation to your CloudBees CI Operations Center:
 
 ```bsh
-echo https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/
+echo https://degrasse-python.workshop.cb-sa.io/cjoc/
 ```
 
 ## Kubernetes Network Policies
@@ -77,7 +77,7 @@ But before we enable any specific network access we will disable all `Ingress` f
 
 ```bsh
 kubectl apply -f k8s/network-policies/deny-all-ingress.yml
-echo https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/
+echo https://degrasse-python.workshop.cb-sa.io/cjoc/
 ```
 
 After running that command try to access your Operations Center in your browser and it should fail with a **504 Gateway Time-out** fron the `ingress-nginx` `controller`. That is because the `ingress-nginx` `controller` `pod` is denied **Ingress** to the CJOC `pod`.
@@ -87,7 +87,7 @@ So next, we will add a network policy that will allow the `ingress-nginx` `contr
 
 ```bsh
 kubectl apply -f k8s/network-policies/allow-ingress-nginx.yml
-echo https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/
+echo https://degrasse-python.workshop.cb-sa.io/cjoc/
 ```
 
 Now try to access your Operations Center in your browser and it should load as expected.
@@ -169,7 +169,7 @@ The CloudBees CI Helm chart provides a values parameters configuration that will
 ```bsh
 cd controller-config
 chmod +x kustomize-wrapper.sh
-CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
+CBCI_HOSTNAME=degrasse-python.workshop.cb-sa.io
 helm upgrade --install --wait controller-a cloudbees/cloudbees-core \
   --set OperationsCenter.HostName=$CBCI_HOSTNAME \
   --namespace='controller-a'  --create-namespace \
@@ -199,7 +199,7 @@ CJOC_ADMIN_API_TOKEN=
 
 ```bsh
 curl --user "admin:$CJOC_ADMIN_API_TOKEN" -XPOST \
-              https://REPLACE_GITHUB_USER.workshop.cb-sa.io/cjoc/casc-items/create-items \
+              https://degrasse-python.workshop.cb-sa.io/cjoc/casc-items/create-items \
               --data-binary @./controller-a-item.yaml -H 'Content-Type:text/yaml'
 ```
 
@@ -212,7 +212,7 @@ helm uninstall controller-a -n controller-a
 kubectl delete ns controller-a
 helm uninstall cbci -n cbci
 kubectl delete ns cbci
-gcloud container clusters delete REPLACE_GITHUB_USER --region=us-east1 --async
+gcloud container clusters delete degrasse-python --region=us-east1 --async
 
 ```
 

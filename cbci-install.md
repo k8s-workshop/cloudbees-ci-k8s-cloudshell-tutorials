@@ -21,8 +21,8 @@ We will be creating a regional cluster to better simulate a production environme
 
 There are over 100 different flags available for the `gcloud` CLI `clusters create` command and we are only specifying 13. Click on the <walkthrough-cloud-shell-icon></walkthrough-cloud-shell-icon> button for the `gloud` CLI command listed below to copy the command into your cloudshell console and then run that command:
 ```bsh
-gcloud config set project "REPLACE_GCP_PROJECT"
-gcloud container clusters create "REPLACE_GITHUB_USER" \
+gcloud config set project "core-workshop"
+gcloud container clusters create "degrasse-python" \
     --region "us-east1" \
     --node-locations "us-east1-b","us-east1-c" \
     --num-nodes=1 \
@@ -184,7 +184,7 @@ Next, we will set a few more environment variables and then use the `gcloud` CLI
 ```bsh
 PROJECT_ID=core-workshop
 DNS_ZONE=workshop-cb-sa
-CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
+CBCI_HOSTNAME=degrasse-python.workshop.cb-sa.io
 
 gcloud dns --project=$PROJECT_ID record-sets transaction start --zone=$DNS_ZONE
 gcloud dns --project=$PROJECT_ID record-sets transaction add $INGRESS_IP --name=$CBCI_HOSTNAME. --ttl=300 --type=A --zone=$DNS_ZONE
@@ -193,7 +193,7 @@ gcloud dns --project=$PROJECT_ID record-sets transaction execute --zone=$DNS_ZON
 
 Finally, you can use the `ping` command to verify that your `CBCI_HOSTNAME` is being directed to the external IP address of your `ingress-nginx` controller:
 ```bsh
-ping REPLACE_GITHUB_USER.workshop.cb-sa.io
+ping degrasse-python.workshop.cb-sa.io
 ```
 
 ## Install CloudBees CI
@@ -240,7 +240,7 @@ Now that we have created the `ConfigMap` we are now ready to use `helm` to insta
 ```bsh
 helm repo add cloudbees https://charts.cloudbees.com/public/cloudbees
 helm repo update
-CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
+CBCI_HOSTNAME=degrasse-python.workshop.cb-sa.io
 helm upgrade --install --wait cbci cloudbees/cloudbees-core \
   --set OperationsCenter.HostName=$CBCI_HOSTNAME \
   --namespace='cbci'  --create-namespace \
@@ -256,7 +256,7 @@ Run the following command to check that the `cbci-oc-init-groovy` `ConfigMap` wa
 kubectl -n cbci exec cjoc-0 -- more /var/jenkins_config/init.groovy.d/09-license-activate.groovy
 ```
 
-The Operations Center for your CloudBees CI cluster should be running or starting up, and available at: [http://REPLACE_GITHUB_USER.workshop.cb-sa.io]/cjoc](http://REPLACE_GITHUB_USER.workshop.cb-sa.io]/cjoc])
+The Operations Center for your CloudBees CI cluster should be running or starting up, and available at: [http://degrasse-python.workshop.cb-sa.io]/cjoc](http://degrasse-python.workshop.cb-sa.io]/cjoc])
 
 Don't **Create First Admin User**. In the next section we will update the OC CasC bundle to create a user for us and retrieve the [password from the GCP Secrets Manager](https://console.cloud.google.com/security/secret-manager/secret/cbci-oc-admin-password/versions?project=core-workshop).
 
@@ -265,17 +265,17 @@ Don't **Create First Admin User**. In the next section we will update the OC Cas
 Workload Identity for GKE allows us to bind GCP IAM Service Accounts (GSA) to Kubernetes Service Accounts (KSA) in a specific Kubernetes Namespace. This allows us to integrate other GCP services with Kubernetes services, such as CloudBees CI. 
 
 ### Configure Workload Identity
-We will now configure the `cjoc serviceAccount` (the `serviceAccount` that the `cjoc pod` is running under) in the `cbci namespace` to be bound to the `core-cloud-run@REPLACE_GCP_PROJECT.iam.gserviceaccount.com` GCP IAM service account - which has been given the necessary permissions to retrieve the secrets we need from the GCP secrets manager. First we will create an IAM policy binding between the Kubernetes `cjoc ServiceAccount` and the GCP IAM service account by running the following command:
+We will now configure the `cjoc serviceAccount` (the `serviceAccount` that the `cjoc pod` is running under) in the `cbci namespace` to be bound to the `core-cloud-run@core-workshop.iam.gserviceaccount.com` GCP IAM service account - which has been given the necessary permissions to retrieve the secrets we need from the GCP secrets manager. First we will create an IAM policy binding between the Kubernetes `cjoc ServiceAccount` and the GCP IAM service account by running the following command:
 ```bsh
-gcloud iam service-accounts add-iam-policy-binding core-cloud-run@REPLACE_GCP_PROJECT.iam.gserviceaccount.com \
+gcloud iam service-accounts add-iam-policy-binding core-cloud-run@core-workshop.iam.gserviceaccount.com \
     --role roles/iam.workloadIdentityUser \
-    --member "serviceAccount:REPLACE_GCP_PROJECT.svc.id.goog[cbci/cjoc]"
+    --member "serviceAccount:core-workshop.svc.id.goog[cbci/cjoc]"
 ```
 Next, we will add an annotation to the `cjoc ServiceAccount` by running the following command:
 ```bsh
 kubectl annotate serviceaccount \
     --namespace cbci cjoc \
-    iam.gke.io/gcp-service-account=core-cloud-run@REPLACE_GCP_PROJECT.iam.gserviceaccount.com
+    iam.gke.io/gcp-service-account=core-cloud-run@core-workshop.iam.gserviceaccount.com
 ```
 
 ## Integrating GCP Secrets Manager with CloudBees CI CasC
@@ -351,7 +351,7 @@ Now we will update the `helm` values for the CloudBees CI application. Open the 
 ```
 - Finally, we will use `helm` to update the `cbci` application:
 ```bsh
-CBCI_HOSTNAME=REPLACE_GITHUB_USER.workshop.cb-sa.io
+CBCI_HOSTNAME=degrasse-python.workshop.cb-sa.io
 helm upgrade --install --wait cbci cloudbees/cloudbees-core \
   --set OperationsCenter.HostName=$CBCI_HOSTNAME \
   --namespace='cbci'  --create-namespace \
